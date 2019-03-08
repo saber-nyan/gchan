@@ -134,3 +134,5 @@ LOGGING = {
         },
     },
 }
+
+USER_FILE_PATH = os.path.join(BASE_DIR, 'userdata')
