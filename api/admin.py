@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from api.models import File, Post, Thread
+from api.models import File, Post, Thread, Board
 
 
 def resolution(obj):
@@ -45,3 +45,18 @@ class ThreadAdmin(admin.ModelAdmin):
     list_filter = ('posts__banned', 'posts__warned', 'posts__op',)
     search_fields = ['posts__post_id', 'posts__text', 'posts__email', 'posts__name', 'posts__subject',
                      'posts__trip_code', 'posts__files__filename', 'posts__files__hash']
+    save_on_top = True
+
+
+class ThreadInline(admin.StackedInline):
+    model = Thread
+
+
+@admin.register(Board)
+class BoardAdmin(admin.ModelAdmin):
+    inlines = [
+        ThreadInline,
+    ]
+    list_display = ('board_name', 'description', 'pages', 'bump_limit')
+    search_fields = ['board_name', 'description', 'default_name']
+    save_on_top = True

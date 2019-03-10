@@ -83,5 +83,31 @@ class Post(models.Model):
 
 
 class Thread(models.Model):
+    board = models.ForeignKey('Board', on_delete=models.CASCADE, related_name='threads',
+                              verbose_name='board', null=False, blank=False)
+
     def __str__(self):
         return f'#{self.pk} ({self.posts.first()})'
+
+
+class Board(models.Model):
+    board_name = models.CharField('name', max_length=10)
+    description = models.CharField('description', max_length=100)
+    pages = models.PositiveIntegerField('page count')
+    bump_limit = models.PositiveIntegerField('bump limit')
+    default_name = models.CharField('default name', max_length=64)
+    max_file_size = models.PositiveIntegerField('Maximum file size (in KB)')
+    max_text_size = models.PositiveIntegerField('Maximum text size (in symbols)')
+
+    created_at = models.DateTimeField('created at', editable=False)
+    modified_at = models.DateTimeField('modified at', blank=True, editable=False)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if not self.created_at:
+            self.created_at = timezone.now()
+        self.modified_at = timezone.now()
+        return super().save(force_insert, force_update, using, update_fields)
+
+    def __str__(self):
+        return f'/{self.board_name}/ ({self.description})'
