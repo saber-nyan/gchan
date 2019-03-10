@@ -27,6 +27,9 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import dj_database_url
+import django_heroku
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
@@ -36,7 +39,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'ko%c8lf3$h9x%8@i_xv8!lo_9vwe%r)2_d-(njic57fw+g*q$*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(os.getenv("DEBUG", True))
 
 ALLOWED_HOSTS = []
 INTERNAL_IPS = ['127.0.0.1', ]
@@ -142,12 +145,22 @@ STATIC_URL = '/static/'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(filename)s:%(lineno)d: [%(name)s-%(levelname)s] %(message)s'
+        },
+    },
     'handlers': {
         'console': {
+            'formatter': 'standard',
             'class': 'logging.StreamHandler',
         },
     },
     'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        },
         'django': {
             'handlers': ['console'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
@@ -156,3 +169,9 @@ LOGGING = {
 }
 
 USER_FILE_PATH = os.path.join(BASE_DIR, 'userdata')
+
+db_from_env = dj_database_url.config()
+DATABASES['default'].update(db_from_env)
+
+# Configure Django App for Heroku.
+django_heroku.settings(locals())

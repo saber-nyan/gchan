@@ -12,6 +12,11 @@
 
 from rest_framework import serializers
 
+from api.models import Post
+
 
 class PostSerializer(serializers.ModelSerializer):
-    pass
+    class Meta:
+        model = Post
+        exclude = ('modified_at', 'thread',)
+        depth = 1
