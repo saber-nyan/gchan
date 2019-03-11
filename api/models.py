@@ -13,13 +13,20 @@ Base imageboard models.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import os
 from enum import Enum
 
 from django.db import models
 from django.utils import timezone
 
-from gchan import settings
+
+# noinspection PyUnusedLocal
+def content_fname(model, fname):
+    return f'c_{model.hash}'
+
+
+# noinspection PyUnusedLocal
+def preview_fname(model, fname):
+    return f'p_{model.hash}'
 
 
 class File(models.Model):
@@ -38,10 +45,10 @@ class File(models.Model):
     width = models.PositiveIntegerField('media width')
     height = models.PositiveIntegerField('media height')
     size = models.PositiveIntegerField('file size')
-    path = models.FilePathField('file path (fullres)', path=os.path.join(settings.USER_FILE_PATH, 'fullres'),
-                                max_length=500)
-    thumbnailPath = models.FilePathField('file path (thumbnail)',
-                                         path=os.path.join(settings.USER_FILE_PATH, 'thumb'), max_length=500)
+
+    content = models.FileField('file content', upload_to=content_fname, max_length=256)
+    preview_content = models.FileField('preview content', upload_to=preview_fname, max_length=256)
+
     thumbnailWidth = models.PositiveIntegerField('file width (thumbnail)')
     thumbnailHeight = models.PositiveIntegerField('file height (thumbnail)')
     filetype = models.CharField('file type', max_length=4,
