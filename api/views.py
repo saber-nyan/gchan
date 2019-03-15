@@ -9,25 +9,32 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.generics import get_object_or_404
 
-from api.models import Post, File, Thread
-from api.serializers import PostSerializer, ThreadSerializer
+from api.models import Post, File, Thread, Board
+from api.serializers import PostSerializer, ThreadSerializer, BoardSerializer
 
 
 @api_view(["GET"], )
 @csrf_exempt
 def get_all_boards(request):
-    pass
+    boards = Board.objects.all()
+    serializer = BoardSerializer(boards, many=True)
+    return JsonResponse(serializer.data, safe=False)
 
 
 @api_view(["GET"], )
 @csrf_exempt
 def get_all_threads(request, board_name, page):
-    pass
+    per_page = 10
+    threads = Thread.objects.filter(board__board_name=board_name)[page * per_page: (page + 1) * per_page]
+    # TODO: hide nested posts from list
+    serializer = ThreadSerializer(threads, many=True)
+    return JsonResponse(serializer.data, safe=False)
 
 
 @api_view(["GET"], )
@@ -35,6 +42,7 @@ def get_all_threads(request, board_name, page):
 def get_thread(request, board_name, thread_id):
     thread = get_object_or_404(Thread, board__board_name=board_name, posts__id=thread_id)
     serializer = ThreadSerializer(thread)
+    # serializer.
     return JsonResponse(serializer.data, safe=False)
 
 

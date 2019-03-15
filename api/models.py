@@ -15,6 +15,7 @@ Base imageboard models.
 
 from enum import Enum
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
@@ -78,7 +79,6 @@ class Post(models.Model):
     post_id = models.PositiveIntegerField('post ID')
     banned = models.BooleanField('banned')
     warned = models.BooleanField('warned')
-    pinned = models.BooleanField('always on top')
     text = models.TextField('text')
     email = models.CharField('email', max_length=64, blank=True)
     name = models.CharField('name', max_length=64, blank=True)
@@ -91,11 +91,22 @@ class Post(models.Model):
     created_at = models.DateTimeField('created at', editable=False)
     modified_at = models.DateTimeField('modified at', blank=True, editable=False)
 
+    def validate_unique(self, exclude=None):
+        if exclude is not None and 'thread' in exclude:
+            return super().validate_unique(exclude)  # early return
+        for post in Post.objects.all():
+            if post.post_id == self.post_id and post.thread.board.board_name == self.thread.board.board_name:
+                if post.pk == self.pk:
+                    continue
+                raise ValidationError({'post_id': ['Post ID must be unique per board', ], })
+        return super().validate_unique(exclude)
+
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         if not self.created_at:
             self.created_at = timezone.now()
         self.modified_at = timezone.now()
+        self.validate_unique()
         return super().save(force_insert, force_update, using, update_fields)
 
     def __str__(self):
@@ -103,6 +114,11 @@ class Post(models.Model):
 
 
 class Thread(models.Model):
+    class Meta:
+        ordering = ['-pinned', ]
+
+    pinned = models.BooleanField('always on top')
+    closed = models.BooleanField('closed')
     board = models.ForeignKey('Board', on_delete=models.CASCADE, related_name='threads',
                               verbose_name='board', null=False, blank=False)
 
@@ -111,7 +127,7 @@ class Thread(models.Model):
 
 
 class Board(models.Model):
-    board_name = models.CharField('name', max_length=10)
+    board_name = models.CharField('name', primary_key=True, max_length=10)
     description = models.CharField('description', max_length=100)
     pages = models.PositiveIntegerField('page count')
     bump_limit = models.PositiveIntegerField('bump limit')

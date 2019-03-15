@@ -33,7 +33,7 @@ class PostSerializer(serializers.ModelSerializer):
 class BoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        exclude = ('modified_at', 'id',)
+        exclude = ('modified_at', 'created_at',)
         depth = 1
 
 

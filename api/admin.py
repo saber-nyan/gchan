@@ -54,7 +54,7 @@ class ThreadAdmin(admin.ModelAdmin):
     inlines = [
         PostInline,
     ]
-    list_filter = ('posts__banned', 'posts__warned', 'posts__op',)
+    list_filter = ('posts__banned', 'posts__warned', 'posts__op', 'pinned', 'closed',)
     search_fields = ['posts__post_id', 'posts__text', 'posts__email', 'posts__name', 'posts__subject',
                      'posts__trip_code', 'posts__files__filename', 'posts__files__hash']
     save_on_top = True
