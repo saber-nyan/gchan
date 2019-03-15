@@ -12,11 +12,36 @@
 
 from rest_framework import serializers
 
-from api.models import Post
+from api.models import Post, File, Thread, Board
+
+
+class FileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = File
+        exclude = ('content', 'preview_content', 'modified_at',)
 
 
 class PostSerializer(serializers.ModelSerializer):
+    files = FileSerializer(many=True)
+
     class Meta:
         model = Post
-        exclude = ('modified_at', 'thread',)
+        exclude = ('modified_at', 'thread', 'id',)
         depth = 1
+
+
+class BoardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        exclude = ('modified_at', 'id',)
+        depth = 1
+
+
+class ThreadSerializer(serializers.ModelSerializer):
+    posts = PostSerializer(many=True)
+    board = BoardSerializer()
+
+    class Meta:
+        model = Thread
+        exclude = ('id',)
+        depth = 2

@@ -78,6 +78,7 @@ class Post(models.Model):
     post_id = models.PositiveIntegerField('post ID')
     banned = models.BooleanField('banned')
     warned = models.BooleanField('warned')
+    pinned = models.BooleanField('always on top')
     text = models.TextField('text')
     email = models.CharField('email', max_length=64, blank=True)
     name = models.CharField('name', max_length=64, blank=True)
@@ -115,8 +116,8 @@ class Board(models.Model):
     pages = models.PositiveIntegerField('page count')
     bump_limit = models.PositiveIntegerField('bump limit')
     default_name = models.CharField('default name', max_length=64)
-    max_file_size = models.PositiveIntegerField('Maximum file size (in KB)')
-    max_text_size = models.PositiveIntegerField('Maximum text size (in symbols)')
+    max_file_size = models.PositiveIntegerField('maximum file size (in KB)')
+    max_text_size = models.PositiveIntegerField('maximum text size (in symbols)')
 
     created_at = models.DateTimeField('created at', editable=False)
     modified_at = models.DateTimeField('modified at', blank=True, editable=False)

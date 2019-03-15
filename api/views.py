@@ -9,13 +9,13 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.generics import get_object_or_404
 
-from api.models import Post
-from api.serializers import PostSerializer
+from api.models import Post, File, Thread
+from api.serializers import PostSerializer, ThreadSerializer
 
 
 @api_view(["GET"], )
@@ -33,7 +33,9 @@ def get_all_threads(request, board_name, page):
 @api_view(["GET"], )
 @csrf_exempt
 def get_thread(request, board_name, thread_id):
-    pass
+    thread = get_object_or_404(Thread, board__board_name=board_name, posts__id=thread_id)
+    serializer = ThreadSerializer(thread)
+    return JsonResponse(serializer.data, safe=False)
 
 
 @api_view(["POST"], )
@@ -59,13 +61,17 @@ def create_post(request, board_name, thread_id):
 @api_view(["GET"], )
 @csrf_exempt
 def get_file(request, file_hash):
-    pass
+    file = get_object_or_404(File, hash=file_hash)
+    with file.content.open('rb') as fd:
+        return HttpResponse(fd.read(), content_type='application/octet-stream')
 
 
 @api_view(["GET"], )
 @csrf_exempt
 def get_thumbnail(request, file_hash):
-    pass
+    file = get_object_or_404(File, hash=file_hash)
+    with file.preview_content.open('rb') as fd:
+        return HttpResponse(fd.read(), content_type='application/octet-stream')
 
 
 @api_view(["POST"], )
