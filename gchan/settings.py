@@ -147,7 +147,8 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format': '%(filename)s:%(lineno)d: [%(name)s-%(levelname)s] %(message)s'
+            'format': '%(asctime)s [pid%(process)d] %(pathname)s:%(lineno)d:%(funcName)s() '
+                      '[%(name)s-%(levelname)s] %(message)s'
         },
     },
     'handlers': {
@@ -181,4 +182,4 @@ db_from_env = dj_database_url.config()
 DATABASES['default'].update(db_from_env)
 
 # Configure Django App for Heroku.
-django_heroku.settings(locals())
+django_heroku.settings(locals(), logging=False)

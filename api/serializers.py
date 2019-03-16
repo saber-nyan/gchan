@@ -41,6 +41,12 @@ class ThreadSerializer(serializers.ModelSerializer):
     posts = PostSerializer(many=True)
     board = BoardSerializer()
 
+    @staticmethod
+    def setup_eager_loading(queryset):
+        """Perform necessary eager loading of data."""
+        queryset = queryset.prefetch_related('posts', 'posts__files')
+        return queryset
+
     class Meta:
         model = Thread
         exclude = ('id',)
