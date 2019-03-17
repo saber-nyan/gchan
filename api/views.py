@@ -13,6 +13,7 @@
 import logging
 
 from django.core.exceptions import ValidationError
+from django.db.models import Max
 from django.http import JsonResponse, HttpResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
@@ -36,7 +37,10 @@ def get_all_boards(request):
 @csrf_exempt
 def get_all_threads(request, board_name, page):
     per_page = 10
-    threads = Thread.objects.filter(board__board_name=board_name)[page * per_page: (page + 1) * per_page]
+    threads = Thread.objects \
+                  .filter(board__board_name=board_name) \
+                  .annotate(Max('posts__created_at')) \
+                  .order_by('-posts__created_at__max')[page * per_page: (page + 1) * per_page]
     board = get_object_or_404(Board, board_name=board_name)
     threads_list = []
     for thread in threads:
