@@ -34,6 +34,7 @@ from gchan import settings
 
 urlpatterns = [
     path('1337_odmin/', admin.site.urls),
+    path('', include('index.urls'), name='index'),
     path('api/v1/', include('api.urls'), name='api-v1')
 ]
 
