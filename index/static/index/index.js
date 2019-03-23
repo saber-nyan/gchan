@@ -15,46 +15,64 @@
  ******************************************************************************/
 
 'use strict';
-Vue.component('post', {
-	props: ['post', 'id'],
-	data: function () {
-		return {
-			isActive: true
-		}
-	},
+
+Vue.component('thread', {
+	props: ['thread'],
+	// data: function () {
+	// 	return {}
+	// },
 	template: `
-<div @click="isActive = !isActive" :class="{ 'btn-warning': !isActive }" class="media text-muted pt-3">
-	<svg class="bd-placeholder-img mr-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 32x32"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"></rect><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
-	<p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-		<strong class="d-block text-gray-dark">#{{ id }} - {{ post.username }}</strong>
-<!--		<span v-html="post.text"></span>-->
-		{{ post.text }}
-	</p>
+<div class="card mb-3">
+	<div class="row no-gutters">
+		<div class="card-header col-md-12">
+			<p style="margin: 0 0 0 15px;">{{ thread.posterName }} &bull; {{ thread.datetime }} &bull; №{{ thread.postId }}
+				<a style="float: right; margin-right: 15px;" href="#" class="card-link">Открыть</a></p>
+		</div>
+		<div class="col-md-4">
+			<!--suppress RequiredAttributes -->
+			<img :src="thread.imagePreviewUrl"
+				 class="card-img"
+				 alt="OP-post image"
+				 style="height: 100%"> <!-- TODO: image -->
+		</div>
+		<div class="col-md-8">
+			<div class="card-body">
+				<h5 class="card-title">{{ thread.name }}</h5>
+				<p class="card-text">{{ thread.text }}</p>
+				<p class="card-text">
+					<small class="text-muted">Пропущено {{ thread.postsCount }} постов, из них {{ thread.postsWithFilesCount }} с файлами</small>
+				</p>
+			</div>
+		</div>
+	</div>
 </div>`
 });
 
 const app = new Vue({
 	el: '#app',
 	data: {
-		postsList: [
-			{username: 'Анонимус', text: 'Что-то про воду'},
-			{username: 'Пионер', text: 'Что-то про CENSORED'},
-			{username: 'Анонимус', text: 'Что-то на\nмного\nстрочек!'}
+		threadsList: [
+			{
+				posterName: 'Анонимус',
+				datetime: '23/03/19 Суб 23:03:44',
+				postId: 2281337,
+				imagePreviewUrl: 'https://placeimg.com/640/480/any/sepia',
+				name: 'Первый тред!',
+				text: 'Какой-то там таки текст, да.',
+				postsCount: 200,
+				postsWithFilesCount: 50
+			},
+			{
+				posterName: 'Пионер',
+				datetime: '23/03/19 Суб 23:43:44',
+				postId: 22874949849,
+				imagePreviewUrl: 'https://placeimg.com/640/480/any/sepia',
+				name: 'Второй тредик...',
+				text: 'Здесь текст, естесственно,\nдругой.',
+				postsCount: 200,
+				postsWithFilesCount: 50
+			}
 		],
-		nextPost: {
-			text: '',
-			username: ''
-		}
-	},
-	methods: {
-		addNewPost: function () {
-			this.postsList.push({
-				username: this.nextPost.username,
-				text: this.nextPost.text
-			});
-			this.nextPost.text = '';
-			this.nextPost.username = '';
-		}
 	},
 	created: function () {
 		console.info('created!', this);

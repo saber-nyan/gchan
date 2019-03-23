@@ -2,6 +2,7 @@
 <project version="4">
   <component name="JavaScriptLibraryMappings">
     <file url="file://$PROJECT_DIR$" libraries="{bootstrap, jquery-3.3.1.slim, popper, vue}" />
+    <file url="PROJECT" libraries="{@types/vue-chartkick, @types/vue-color, @types/vue-markdown, @types/vue-resource, @types/vue-scrollto, @types/vue-select, vue}" />
     <includedPredefinedLibrary name="Node.js Core" />
   </component>
 </project>

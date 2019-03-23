@@ -18,7 +18,9 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Test Vue.js page!</title>
+	<title>gchan</title>
+
+	<meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width">
 
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
 		  integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -29,28 +31,58 @@
 </head>
 <body class="bg-light">
 <div id="app" class="container">
-	<form @submit.prevent="addNewPost">
-		<div class="form-group">
-			<label for="nPostUsername">Анончик?!</label>
-			<input v-model="nextPost.username" class="form-control" id="nPostUsername" placeholder="Username" required>
-		</div>
-		<div class="form-group">
-			<label for="nPostText">Пиши свой высер здесь!</label>
-			<textarea style="min-height: 100px;" v-model="nextPost.text" rows="3" class="form-control" id="nPostText"
-					  placeholder="Text..." required></textarea>
-		</div>
-		<button type="submit" class="btn btn-success">Постим!</button>
-		<button type="reset" class="btn btn-danger">Сброс</button>
-	</form>
+	<!--	<form @submit.prevent="addNewPost">
+            <div class="form-group">
+                <label for="nPostUsername">Анончик?!</label>
+                <input v-model="nextPost.username" class="form-control" id="nPostUsername" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+                <label for="nPostText">Пиши свой высер здесь!</label>
+                <textarea style="min-height: 100px;" v-model="nextPost.text" rows="3" class="form-control" id="nPostText"
+                          placeholder="Text..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Постим!</button>
+            <button type="reset" class="btn btn-danger">Сброс</button>
+        </form>
 
-	<div class="my-3 p-3 bg-white rounded shadow-sm">
-		<post
-				v-for="(post, id) in postsList"
-				:post="post"
-				:id="id"
-				:key="id">
-		</post>
-	</div>
+        <div class="my-3 p-3 bg-white rounded shadow-sm">
+            <post
+                    v-for="(post, id) in postsList"
+                    :post="post"
+                    :id="id"
+                    :key="id">
+            </post>
+        </div> -->
+	<nav class="navbar navbar-expand-md navbar-dark fixed-bottom bg-dark">
+		<a class="navbar-brand" href="#">gchan, desu!</a> <!-- TODO: href -->
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+				aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Переключить строку навигации">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav mr-auto">
+				<li class="nav-item active">
+					<a class="nav-link" href="#">Home</a> <!-- TODO: href -->
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="#">Link</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+				</li>
+			</ul>
+			<form class="form-inline my-2 my-lg-0">
+				<input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+				<button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+			</form>
+		</div>
+	</nav>
+
+	<thread
+			v-for="thread in threadsList"
+			:thread="thread"
+			:key="thread.postId"></thread>
+
 </div>
 <script src="{% static 'index/index.js' %}"></script>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

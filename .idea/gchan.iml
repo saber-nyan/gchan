@@ -24,6 +24,12 @@
     <orderEntry type="library" name="jquery-3.3.1.slim" level="application" />
     <orderEntry type="library" name="popper" level="application" />
     <orderEntry type="library" name="bootstrap" level="application" />
+    <orderEntry type="library" name="@types/vue-chartkick" level="application" />
+    <orderEntry type="library" name="@types/vue-color" level="application" />
+    <orderEntry type="library" name="@types/vue-markdown" level="application" />
+    <orderEntry type="library" name="@types/vue-resource" level="application" />
+    <orderEntry type="library" name="@types/vue-scrollto" level="application" />
+    <orderEntry type="library" name="@types/vue-select" level="application" />
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_CONFIGURATION" value="Django" />
