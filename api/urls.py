@@ -26,5 +26,5 @@ urlpatterns = [
 
     path('file/<str:file_hash>/', v.get_file, name='get-file'),
     path('file/thumbnail/<str:file_hash>/', v.get_thumbnail, name='get-thumbnail'),
-    path('file/', v.upload_file, name='upload-file'),
+    path('board/<str:board_name>/file/', v.upload_file, name='upload-file'),
 ]

@@ -41,6 +41,14 @@ class File(models.Model):
         WEBM = 'webm'
         WEBP = 'webp'
 
+        @classmethod
+        def has_value(cls, value):
+            return any(value == item.value for item in cls)
+
+        @classmethod
+        def list_values(cls):
+            return [item.value for item in cls]
+
     hash = models.CharField('SHA512', max_length=128, primary_key=True)
     filename = models.CharField('file name', max_length=256)
     width = models.PositiveIntegerField('media width')
