@@ -203,6 +203,7 @@ def upload_file(request, board_name):
             with open(temp_file, 'wb') as fd:
                 fd.write(data)
             vid = cv2.VideoCapture(temp_file)
+            os.remove(temp_file)
             _, frame = vid.read()
             temp_file = os.path.join(tempfile.gettempdir(), f'{file_hash}.jpg')
             cv2.imwrite(temp_file, frame)
@@ -218,7 +219,7 @@ def upload_file(request, board_name):
                 thumbnail = thumbnail.convert('RGB')
                 thumbnail_bytes = BytesIO()
                 thumbnail.save(thumbnail_bytes, format='JPEG', quality=85)
-
+            os.remove(temp_file)
             model_file = File(
                 hash=file_hash,
                 filename=filename,
