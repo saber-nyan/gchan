@@ -18,7 +18,7 @@ from api.models import Post, File, Thread, Board
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
-        exclude = ('content', 'preview_content', 'modified_at',)
+        exclude = ('modified_at',)
 
 
 class PostSerializer(serializers.ModelSerializer):

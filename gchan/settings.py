@@ -180,6 +180,8 @@ AWS_DEFAULT_ACL = None
 AWS_BUCKET_ACL = None
 AWS_S3_HOST = os.getenv('S3_HOST', None)
 S3_USE_SIGV4 = True
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_REGION_NAME = 'eu-west-3'
 
 db_from_env = dj_database_url.config()
 DATABASES['default'].update(db_from_env)

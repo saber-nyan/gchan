@@ -148,6 +148,10 @@ def upload_file(request, board_name):
         ext_start = time.time()
         fformat = filetype.guess(data)
         log.info('Time to detect fformat: %s', ext_start - time.time())
+        try:
+            log.info('Detected mime: %s, fmt: %s', fformat.MIME, fformat.EXTENSION)
+        except:
+            pass
         if fformat is None or not File.FileTypeEnum.has_value(fformat.EXTENSION):
             result.append({
                 filename: {
@@ -203,8 +207,9 @@ def upload_file(request, board_name):
             with open(temp_file, 'wb') as fd:
                 fd.write(data)
             vid = cv2.VideoCapture(temp_file)
-            os.remove(temp_file)
             _, frame = vid.read()
+            vid.release()
+            os.remove(temp_file)
             temp_file = os.path.join(tempfile.gettempdir(), f'{file_hash}.jpg')
             cv2.imwrite(temp_file, frame)
 

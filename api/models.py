@@ -35,7 +35,7 @@ class File(models.Model):
         ordering = ['-created_at', '-modified_at', 'filename', ]
 
     class FileTypeEnum(Enum):
-        JPEG = 'jpeg'
+        JPEG = 'jpg'
         PNG = 'png'
         GIF = 'gif'
         WEBM = 'webm'
