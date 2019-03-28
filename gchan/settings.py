@@ -25,8 +25,9 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 #  limitations under the License.
 
 import os
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import platform
+
 import dj_database_url
 import django_heroku
 
@@ -46,7 +47,15 @@ INTERNAL_IPS = ['127.0.0.1', ]
 
 # Application definition
 
-INSTALLED_APPS = [
+if platform.system() == 'Linux':
+    # noinspection PyUnresolvedReferences
+    INSTALLED_APPS = [
+        'scout_apm.django',
+    ]
+else:
+    INSTALLED_APPS = []
+
+INSTALLED_APPS.extend([
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -57,7 +66,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'api',
     'index',
-]
+])
 
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',  # PLACE AFTER GZipMiddleware!!!
@@ -185,6 +194,8 @@ AWS_S3_REGION_NAME = 'eu-west-3'
 
 db_from_env = dj_database_url.config()
 DATABASES['default'].update(db_from_env)
+
+SCOUT_NAME = 'gchan'
 
 # Configure Django App for Heroku.
 django_heroku.settings(locals(), logging=False)
