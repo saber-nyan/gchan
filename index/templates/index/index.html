@@ -25,7 +25,12 @@
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
 		  integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
+	{% if settings.DEBUG %}
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	{% else %}
+		<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+	{% endif %}
+	<script src="https://unpkg.com/vue-router@3.0.2/dist/vue-router.js"></script>
 
 	<link rel="stylesheet" type="text/css" href="{% static 'index/index.css' %}">
 </head>
@@ -62,10 +67,12 @@
 		<div class="collapse navbar-collapse" id="navbarSupportedContent">
 			<ul class="navbar-nav mr-auto">
 				<li class="nav-item active">
-					<a class="nav-link" href="#">Home</a> <!-- TODO: href -->
+					{#					<a class="nav-link" href="#">Home</a> <!-- TODO: href -->#}
+					<router-link to="/">Home</router-link>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" href="#">Link</a>
+					{#					<a class="nav-link" href="#">Link</a>#}
+					<router-link to="/b/">/b/</router-link>
 				</li>
 				<li class="nav-item">
 					<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>

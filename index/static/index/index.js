@@ -71,7 +71,7 @@ const app = new Vue({
 				text: 'Здесь текст, естесственно,\nдругой.',
 				postsCount: 200,
 				postsWithFilesCount: 50
-			}
+			},
 		],
 	},
 	created: function () {

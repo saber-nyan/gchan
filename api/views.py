@@ -23,7 +23,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import Max
-from django.http import JsonResponse, HttpResponse, Http404
+from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from filetype import filetype
 from filetype.types import IMAGE, VIDEO
@@ -32,7 +32,7 @@ from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.generics import get_object_or_404
 
 from api.models import Post, File, Thread, Board
-from api.serializers import PostSerializer, ThreadSerializer, BoardSerializer
+from api.serializers import PostSerializer, ThreadSerializer, BoardSerializer, FileSerializer
 
 log = logging.getLogger(__name__)
 
@@ -97,7 +97,7 @@ def create_thread(request, board_name):
 
 @api_view(["GET"], )
 @csrf_exempt
-def get_post(request, board_name, thread_id, post_id):
+def get_post(request, board_name, post_id):
     post = get_object_or_404(Post, post_id=post_id, thread__board__board_name=board_name)
     serializer = PostSerializer(post)
     return JsonResponse(serializer.data, safe=False)
@@ -113,16 +113,8 @@ def create_post(request, board_name, thread_id):
 @csrf_exempt
 def get_file(request, file_hash):
     file = get_object_or_404(File, hash=file_hash)
-    with file.content.open('rb') as fd:
-        return HttpResponse(fd.read(), content_type='application/octet-stream')
-
-
-@api_view(["GET"], )
-@csrf_exempt
-def get_thumbnail(request, file_hash):
-    file = get_object_or_404(File, hash=file_hash)
-    with file.preview_content.open('rb') as fd:
-        return HttpResponse(fd.read(), content_type='application/octet-stream')
+    serializer = FileSerializer(file)
+    return JsonResponse(serializer.data, safe=False)
 
 
 @csrf_exempt

@@ -14,6 +14,8 @@
 
 from django.shortcuts import render
 
+from gchan import settings
+
 
 def index(request):
-    return render(request, 'index/index.html')
+    return render(request, 'index/index.html', {'settings': settings, })

@@ -21,10 +21,9 @@ urlpatterns = [
     path('board/<str:board_name>/thread/<int:thread_id>/', v.get_thread, name='get-thread'),
     path('board/<str:board_name>/thread/', v.create_thread, name='create-thread'),
 
-    path('board/<str:board_name>/thread/<int:thread_id>/post/<int:post_id>/', v.get_post, name='get-post'),
+    path('board/<str:board_name>/post/<int:post_id>/', v.get_post, name='get-post'),
     path('board/<str:board_name>/thread/<int:thread_id>/post/', v.create_post, name='create-post'),
 
     path('file/<str:file_hash>/', v.get_file, name='get-file'),
-    path('file/thumbnail/<str:file_hash>/', v.get_thumbnail, name='get-thumbnail'),
     path('board/<str:board_name>/file/', v.upload_file, name='upload-file'),
 ]
