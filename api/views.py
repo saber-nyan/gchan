@@ -14,12 +14,14 @@ import logging
 import os
 import tempfile
 from io import BytesIO
+from typing import Dict
 
 import cv2
 from PIL import Image
 from PIL.JpegImagePlugin import JpegImageFile
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from django.db import IntegrityError
 from django.db.models import Max
 from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
@@ -28,6 +30,7 @@ from filetype.types import IMAGE, VIDEO
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.generics import get_object_or_404
+from rest_framework.parsers import JSONParser
 
 from api.models import Post, File, Thread, Board
 from api.serializers import PostSerializer, ThreadSerializer, BoardSerializer, FileSerializer
@@ -104,7 +107,44 @@ def get_post(request, board_name, post_id):
 @api_view(["POST"], )
 @csrf_exempt
 def create_post(request, board_name, thread_id):
-    pass
+    try:
+        board = get_object_or_404(Board, board_name=board_name)
+        thread = board.threads.get(posts__id=thread_id)
+        if board.closed:
+            return JsonResponse({'success': False, 'details': 'Доска закрыта.'})
+        if thread.closed:
+            return JsonResponse({'success': False, 'details': 'Тред закрыт.'})
+    except (TypeError, ValueError, ValidationError, Thread.DoesNotExist):
+        log.info('No such thread to post in.')
+        raise Http404()
+    data: Dict = JSONParser().parse(request)
+    files = File.objects.filter(hash__in=data.pop('files')).all()
+    if len(files) > 4:
+        return JsonResponse({'success': False, 'details': 'Нельзя постить больше четырех файлов.'})
+
+    # TODO: tripcode processing
+    try:
+        post = Post.objects.create(
+            post_id=Post.objects.filter(thread__board=board).last().post_id + 1,
+            text=data.get('text', None),
+            email=data.get('email', ''),
+            name=data.get('name', None) or board.default_name,
+            subject=data.get('subject', ''),
+            trip_code=data.get('trip_code', ''),
+            op=data.get('op', None),
+            thread=thread
+        )
+    except IntegrityError as e:
+        info = e.args[0].split('\n')[0]
+        return JsonResponse({'success': False, 'details': f'Не все необходимые поля заполнены: {info}'})
+    post.files.add(*files)
+    try:
+        post.full_clean()
+    except ValidationError as e:
+        return JsonResponse({'success': False, 'errors': e.message_dict})
+    post.save()
+    thread.save()
+    return JsonResponse({'success': True, 'data': PostSerializer(post).data}, safe=False)
 
 
 @api_view(["GET"], )

@@ -85,14 +85,14 @@ class Post(models.Model):
                                verbose_name='thread', null=False, blank=False)
 
     post_id = models.PositiveIntegerField('post ID')
-    banned = models.BooleanField('banned')
-    warned = models.BooleanField('warned')
+    banned = models.BooleanField('banned', default=False)
+    warned = models.BooleanField('warned', default=False)
     text = models.TextField('text')
     email = models.CharField('email', max_length=64, blank=True)
     name = models.CharField('name', max_length=64, blank=True)
     subject = models.CharField('subject', max_length=64, blank=True)
     trip_code = models.CharField('tripcode', max_length=64, blank=True)
-    op = models.BooleanField('OP mark')
+    op = models.BooleanField('OP mark', default=False)
 
     files = models.ManyToManyField(File, verbose_name='files', blank=True)
 
@@ -114,7 +114,7 @@ class Post(models.Model):
         if not self.created_at:
             self.created_at = timezone.now()
         self.modified_at = timezone.now()
-        self.validate_unique()
+        # self.validate_unique()
         return super().save(force_insert, force_update, using, update_fields)
 
     def __str__(self):
@@ -142,6 +142,8 @@ class Board(models.Model):
     default_name = models.CharField('default name', max_length=64)
     max_file_size = models.PositiveIntegerField('maximum file size (in KB)')
     max_text_size = models.PositiveIntegerField('maximum text size (in symbols)')
+
+    closed = models.BooleanField('closed')
 
     created_at = models.DateTimeField('created at', editable=False)
     modified_at = models.DateTimeField('modified at', blank=True, editable=False)
