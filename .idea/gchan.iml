@@ -30,6 +30,7 @@
     <orderEntry type="library" name="@types/vue-resource" level="application" />
     <orderEntry type="library" name="@types/vue-scrollto" level="application" />
     <orderEntry type="library" name="@types/vue-select" level="application" />
+    <orderEntry type="library" name="vue-router" level="application" />
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_CONFIGURATION" value="Django" />

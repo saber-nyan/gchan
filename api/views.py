@@ -13,7 +13,6 @@ import hashlib
 import logging
 import os
 import tempfile
-import time
 from io import BytesIO
 
 import cv2
@@ -21,7 +20,6 @@ from PIL import Image
 from PIL.JpegImagePlugin import JpegImageFile
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import Max
 from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
@@ -125,7 +123,6 @@ def upload_file(request, board_name):
     result = []
 
     max_file_size = get_object_or_404(Board, board_name=board_name).max_file_size * 1024
-    file: InMemoryUploadedFile
     for filename, file in request.FILES.items():
         data = file.read(max_file_size + 1)
         if len(data) > max_file_size:
@@ -137,9 +134,8 @@ def upload_file(request, board_name):
                 }
             })
             continue
-        ext_start = time.time()
+
         fformat = filetype.guess(data)
-        log.info('Time to detect fformat: %s', ext_start - time.time())
         try:
             log.info('Detected mime: %s, fmt: %s', fformat.MIME, fformat.EXTENSION)
         except:
