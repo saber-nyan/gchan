@@ -84,8 +84,9 @@
 			</form>
 		</div>
 	</nav>
-	<router-view>
-	</router-view>
+	<transition name="fade">
+		<router-view></router-view>
+	</transition>
 
 </div>
 <script src="{% static 'index/index.js' %}"></script>
