@@ -16,7 +16,7 @@
 
 'use strict';
 
-Vue.component('thread', {
+const Thread = Vue.component('thread', {
 	props: ['thread'],
 	// data: function () {
 	// 	return {}
@@ -48,33 +48,54 @@ Vue.component('thread', {
 </div>`
 });
 
-const app = new Vue({
-	el: '#app',
-	data: {
-		threadsList: [
-			{
-				posterName: 'Анонимус',
-				datetime: '23/03/19 Суб 23:03:44',
-				postId: 2281337,
-				imagePreviewUrl: 'https://placeimg.com/640/480/any/sepia',
-				name: 'Первый тред!',
-				text: 'Какой-то там таки текст, да.',
-				postsCount: 200,
-				postsWithFilesCount: 50
-			},
-			{
-				posterName: 'Пионер',
-				datetime: '23/03/19 Суб 23:43:44',
-				postId: 22874949849,
-				imagePreviewUrl: 'https://placeimg.com/640/480/any/sepia',
-				name: 'Второй тредик...',
-				text: 'Здесь текст, естесственно,\nдругой.',
-				postsCount: 200,
-				postsWithFilesCount: 50
-			},
-		],
+const Board = Vue.component('board', {
+	data: function () {
+		return {
+			threadsList: [
+				{
+					posterName: 'Анонимус',
+					datetime: '23/03/19 Суб 23:03:44',
+					postId: 2281337,
+					imagePreviewUrl: 'https://placeimg.com/640/480/any/sepia',
+					name: 'Первый тред!',
+					text: 'Какой-то там таки текст, да.',
+					postsCount: 200,
+					postsWithFilesCount: 50
+				},
+				{
+					posterName: 'Пионер',
+					datetime: '23/03/19 Суб 23:43:44',
+					postId: 22874949849,
+					imagePreviewUrl: 'https://placeimg.com/640/480/any/sepia',
+					name: 'Второй тредик...',
+					text: 'Здесь текст, естесственно,\nдругой.',
+					postsCount: 200,
+					postsWithFilesCount: 50
+				},
+			],
+		}
 	},
+	template: `
+<div>
+	<thread
+		v-for="thread in threadsList"
+		:thread="thread"
+		:key="thread.postId"></thread>
+</div>`
+});
+
+const router = new VueRouter({
+	routes: [
+		{path: '/b/', component: Board},
+	],
+});
+
+// noinspection JSUnusedGlobalSymbols
+const app = new Vue({
+	router: router,
+	el: '#app',
 	created: function () {
 		console.info('created!', this);
-	}
+	},
+	components: {Thread, Board,},
 });

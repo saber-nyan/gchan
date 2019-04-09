@@ -21,7 +21,7 @@ from PIL import Image
 from PIL.JpegImagePlugin import JpegImageFile
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
-from django.db import IntegrityError
+from django.db import IntegrityError, DataError
 from django.db.models import Max
 from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
@@ -123,6 +123,8 @@ def create_post(request, board_name, thread_id):
         return JsonResponse({'success': False, 'details': 'Нельзя постить больше четырех файлов.'})
 
     # TODO: tripcode processing
+    # TODO: text size check
+    # TODO: rate limiting
     try:
         post = Post.objects.create(
             post_id=Post.objects.filter(thread__board=board).last().post_id + 1,
@@ -134,9 +136,11 @@ def create_post(request, board_name, thread_id):
             op=data.get('op', None),
             thread=thread
         )
-    except IntegrityError as e:
+    except (IntegrityError, DataError) as e:
         info = e.args[0].split('\n')[0]
         return JsonResponse({'success': False, 'details': f'Не все необходимые поля заполнены: {info}'})
+    except ValidationError as e:
+        return JsonResponse({'success': False, 'details': ', '.join(e.messages)})
     post.files.add(*files)
     try:
         post.full_clean()

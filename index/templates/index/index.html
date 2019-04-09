@@ -68,11 +68,11 @@
 			<ul class="navbar-nav mr-auto">
 				<li class="nav-item active">
 					{#					<a class="nav-link" href="#">Home</a> <!-- TODO: href -->#}
-					<router-link to="/">Home</router-link>
+					<router-link class="nav-link" to="/">Home</router-link>
 				</li>
 				<li class="nav-item">
 					{#					<a class="nav-link" href="#">Link</a>#}
-					<router-link to="/b/">/b/</router-link>
+					<router-link class="nav-link" to="/b/">/b/</router-link>
 				</li>
 				<li class="nav-item">
 					<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
@@ -84,11 +84,8 @@
 			</form>
 		</div>
 	</nav>
-
-	<thread
-			v-for="thread in threadsList"
-			:thread="thread"
-			:key="thread.postId"></thread>
+	<router-view>
+	</router-view>
 
 </div>
 <script src="{% static 'index/index.js' %}"></script>
