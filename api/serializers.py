@@ -9,6 +9,9 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+"""
+JSON-сериализаторы.
+"""
 
 from rest_framework import serializers
 
@@ -16,12 +19,20 @@ from api.models import Post, File, Thread, Board
 
 
 class FileSerializer(serializers.ModelSerializer):
+    """
+    Сериализует информацию о файле, вместе
+    с прямыми ссылками на эскиз и контент.
+    """
+
     class Meta:
         model = File
         exclude = ('modified_at',)
 
 
 class PostSerializer(serializers.ModelSerializer):
+    """
+    Сериализует пост.
+    """
     files = FileSerializer(many=True)
 
     class Meta:
@@ -31,6 +42,10 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class BoardSerializer(serializers.ModelSerializer):
+    """
+    Сериализует доску.
+    """
+
     class Meta:
         model = Board
         exclude = ('modified_at', 'created_at',)
@@ -38,12 +53,17 @@ class BoardSerializer(serializers.ModelSerializer):
 
 
 class ThreadSerializer(serializers.ModelSerializer):
+    """
+    Сериализует тред.
+    """
     posts = PostSerializer(many=True)
     board = BoardSerializer()
 
     @staticmethod
     def setup_eager_loading(queryset):
-        """Perform necessary eager loading of data."""
+        """
+        Предзагрузка для решения проблемы N+1.
+        """
         queryset = queryset.prefetch_related('posts', 'posts__files')
         return queryset
 

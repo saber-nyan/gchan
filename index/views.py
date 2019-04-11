@@ -11,11 +11,20 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+"""
+Одна вьюха, что рендерит SPA...
+"""
 
+from django.http import HttpResponse
 from django.shortcuts import render
 
 from gchan import settings
 
 
-def index(request):
+def index(request) -> HttpResponse:
+    """
+    Рендерит SPA.
+
+    :param request: Запрос.
+    """
     return render(request, 'index/index.html', {'settings': settings, })

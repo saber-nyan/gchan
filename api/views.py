@@ -9,12 +9,16 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+"""
+Реализация методов API.
+"""
+
 import hashlib
 import logging
 import os
 import tempfile
 from io import BytesIO
-from typing import Dict
+from typing import Dict, Union
 
 import cv2
 from PIL import Image
@@ -22,7 +26,6 @@ from PIL.JpegImagePlugin import JpegImageFile
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import IntegrityError, DataError
-from django.db.models import Max
 from django.http import JsonResponse, Http404
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -41,7 +44,16 @@ log = logging.getLogger(__name__)
 THREADS_PER_PAGE = 10
 
 
-def create_post_or_thread(request, board_name, thread_id=None):
+def create_post_or_thread(request, board_name, thread_id=None) -> JsonResponse:
+    """
+    Создает пост в указанный тред по ``thread_id``, или, если аргумент не указан,
+    создает новый тред.
+
+    :param request: Запрос с JSON.
+    :param board_name: Доска, где создавать пост/тред.
+    :param thread_id: Номер треда, где создавать пост или ``None``.
+    :raise Http404: Если доска или тред не найдены (и указан ``thread_id``).
+    """
     try:
         board = get_object_or_404(Board, board_name=board_name)
         if board.closed:
@@ -59,6 +71,7 @@ def create_post_or_thread(request, board_name, thread_id=None):
         return JsonResponse({'success': False, 'details': 'Нельзя постить больше четырех файлов.'})
     if thread_id is None and len(files) == 0:
         return JsonResponse({'success': False, 'details': 'Нельзя создать тред без файла.'})
+    # TODO: captcha
     # TODO: tripcode processing
     # TODO: text size check
     # TODO: rate limiting
@@ -71,12 +84,14 @@ def create_post_or_thread(request, board_name, thread_id=None):
                 last_bump_time=timezone.now()
             )
             thread.save()
+        # noinspection PyBroadException
         try:
             new_post_id = Post.objects.filter(thread__board=board).last().post_id + 1
         except Exception:
             log.warning('Unknown new post id...', exc_info=True)
             new_post_id = 1
         email = data.get('email', '')
+        # noinspection PyUnboundLocalVariable
         post = Post.objects.create(
             post_id=new_post_id,
             text=data.get('text', None),
@@ -85,7 +100,7 @@ def create_post_or_thread(request, board_name, thread_id=None):
             subject=data.get('subject', ''),
             trip_code=data.get('trip_code', ''),
             op=data.get('op', False),
-            thread=thread  # FIXME: Local variable 'thread' might be referenced before assignment?!
+            thread=thread
         )
         if thread_id is not None and email != "sage" and thread.posts.count() <= board.bump_limit:
             thread.last_bump_time = timezone.now()
@@ -110,7 +125,12 @@ def create_post_or_thread(request, board_name, thread_id=None):
 
 @api_view(["GET"], )
 @csrf_exempt
-def get_all_boards(request):
+def get_all_boards(request) -> JsonResponse:
+    """
+    Возвращает список досок.
+
+    :param request: Запрос.
+    """
     boards = Board.objects.all()
     serializer = BoardSerializer(boards, many=True)
     return JsonResponse(serializer.data, safe=False)
@@ -118,11 +138,18 @@ def get_all_boards(request):
 
 @api_view(["GET"], )
 @csrf_exempt
-def get_all_threads(request, board_name, page):
-    threads = Thread.objects \
-                  .filter(board__board_name=board_name) \
-                  .annotate(Max('posts__created_at')) \
-                  .order_by('-posts__created_at__max')[page * THREADS_PER_PAGE: (page + 1) * THREADS_PER_PAGE]
+def get_all_threads(request, board_name, page) -> JsonResponse:
+    """
+    Возвращает список тредов с доски.
+    Каждый объект треда содержит в себе ОП-пост и три последних поста.
+
+    :param request: Запрос.
+    :param board_name: Короткое имя доски.
+    :param page: Страница.
+    :raise Http404: Если доска не найдена.
+    """
+    threads = Thread.objects.filter(board__board_name=board_name)[
+              page * THREADS_PER_PAGE: (page + 1) * THREADS_PER_PAGE]
     board = get_object_or_404(Board, board_name=board_name)
     threads_list = []
     for thread in threads:
@@ -148,7 +175,15 @@ def get_all_threads(request, board_name, page):
 
 @api_view(["GET"], )
 @csrf_exempt
-def get_thread(request, board_name, thread_id):
+def get_thread(request, board_name, thread_id) -> JsonResponse:
+    """
+    Возвращает тред со списком постов.
+
+    :param request: Запрос.
+    :param board_name: Короткое имя доски.
+    :param thread_id: Номер треда.
+    :raise Http404: Если тред не найден.
+    """
     try:
         thread_qs = Thread.objects
         thread_qs = ThreadSerializer.setup_eager_loading(thread_qs)
@@ -161,13 +196,29 @@ def get_thread(request, board_name, thread_id):
 
 @api_view(["POST"], )
 @csrf_exempt
-def create_thread(request, board_name):
+def create_thread(request, board_name) -> JsonResponse:
+    """
+    Создает тред.
+    Обязательно должен быть хотя бы один медиа-файл.
+
+    :param request: Запрос с JSON поста.
+    :param board_name: Короткое имя доски, где нужно создать тред.
+    :raise Http404: Если доска не найдена.
+    """
     return create_post_or_thread(request, board_name)
 
 
 @api_view(["GET"], )
 @csrf_exempt
-def get_post(request, board_name, post_id):
+def get_post(request, board_name, post_id) -> JsonResponse:
+    """
+    Получает один пост.
+
+    :param request: Запрос.
+    :param board_name: Короткое имя доски.
+    :param post_id: Номер поста.
+    :raise Http404: Если пост не найден.
+    """
     post = get_object_or_404(Post, post_id=post_id, thread__board__board_name=board_name)
     serializer = PostSerializer(post)
     return JsonResponse(serializer.data, safe=False)
@@ -175,27 +226,52 @@ def get_post(request, board_name, post_id):
 
 @api_view(["POST"], )
 @csrf_exempt
-def create_post(request, board_name, thread_id):
+def create_post(request, board_name, thread_id) -> JsonResponse:
+    """
+    Создает пост в треде.
+
+    :param request: Запрос с JSON поста.
+    :param board_name: Короткое имя доски.
+    :param thread_id: Номер треда.
+    :raise Http404: Если доска или тред не найдены.
+    """
     return create_post_or_thread(request, board_name, thread_id)
 
 
 @api_view(["GET"], )
 @csrf_exempt
-def get_file(request, file_hash):
+def get_file(request, file_hash) -> JsonResponse:
+    """
+    Получает информацию о файле вместе с прямыми ссылками на эскиз и контент.
+
+    :param request: Запрос.
+    :param file_hash: SHA512 хэш файла.
+    :raise Http404: Если файл не найден.
+    """
     file = get_object_or_404(File, hash=file_hash)
     serializer = FileSerializer(file)
     return JsonResponse(serializer.data, safe=False)
 
 
 @csrf_exempt
-def upload_file(request, board_name):
+def upload_file(request, board_name) -> Union[JsonResponse, MethodNotAllowed]:
+    """
+    Загружает файл на сервер.
+    Файл хэшируется, с него читаются метаданные, для него создается эскиз,
+    эскиз и контент грузяться на Amazon S3.
+
+    :param request: Запрос с файлами (до четырех).
+    :param board_name: Имя целевой доски для постинга файла (у каждой доски свое ограничение на размер).
+    :return: Массив с именами фалов и результатом загрузки.
+    :raise Http404: Если доска не найдена.
+    """
     if request.method != 'POST':
         return MethodNotAllowed(request.method)
 
     result = []
 
     max_file_size = get_object_or_404(Board, board_name=board_name).max_file_size * 1024
-    for filename, file in request.FILES.items():
+    for filename, file in request.FILES.items():  # TODO: limit files count to 4
         data = file.read(max_file_size + 1)
         if len(data) > max_file_size:
             file.close()
@@ -208,10 +284,6 @@ def upload_file(request, board_name):
             continue
 
         fformat = filetype.guess(data)
-        try:
-            log.info('Detected mime: %s, fmt: %s', fformat.MIME, fformat.EXTENSION)
-        except:
-            pass
         if fformat is None or not File.FileTypeEnum.has_value(fformat.EXTENSION):
             result.append({
                 filename: {

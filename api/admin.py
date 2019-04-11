@@ -9,6 +9,9 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+"""
+Настройка админки модуля.
+"""
 
 from django.contrib import admin
 
@@ -16,17 +19,26 @@ from api.models import File, Post, Thread, Board
 
 
 def resolution(obj):
+    """
+    Отображает разрешение картинки одной строчкой.
+    """
     return f'{obj.width}x{obj.height}'
 
 
-class FileMembershipInline(admin.StackedInline):
+class FileToPostInline(admin.StackedInline):
+    """
+    Инлайн отношения пост-файл.
+    """
     model = Post.files.through
 
 
 @admin.register(File)
 class FileAdmin(admin.ModelAdmin):
+    """
+    Админка модели File.
+    """
     inlines = [
-        FileMembershipInline,
+        FileToPostInline,
     ]
     list_display = ('hash', 'filename', resolution, 'size', 'filetype', 'created_at', 'modified_at',)
     list_filter = ('filetype',)
@@ -36,8 +48,11 @@ class FileAdmin(admin.ModelAdmin):
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
+    """
+    Админка модели Post.
+    """
     inlines = [
-        FileMembershipInline,
+        FileToPostInline,
     ]
     list_display = ('post_id', 'banned', 'warned', 'email', 'name', 'created_at', 'modified_at',)
     list_filter = ('banned', 'warned', 'op',)
@@ -46,14 +61,21 @@ class PostAdmin(admin.ModelAdmin):
 
 
 class PostInline(admin.StackedInline):
+    """
+    Инлайн поста.
+    """
     model = Post
 
 
 @admin.register(Thread)
 class ThreadAdmin(admin.ModelAdmin):
+    """
+    Админка модели Thread.
+    """
     inlines = [
         PostInline,
     ]
+    list_display = ('__str__', 'board', 'last_bump_time', 'pinned', 'closed',)
     list_filter = ('posts__banned', 'posts__warned', 'posts__op', 'pinned', 'closed',)
     search_fields = ['posts__post_id', 'posts__text', 'posts__email', 'posts__name', 'posts__subject',
                      'posts__trip_code', 'posts__files__filename', 'posts__files__hash']
@@ -61,11 +83,17 @@ class ThreadAdmin(admin.ModelAdmin):
 
 
 class ThreadInline(admin.StackedInline):
+    """
+    Инлайн треда.
+    """
     model = Thread
 
 
 @admin.register(Board)
 class BoardAdmin(admin.ModelAdmin):
+    """
+    Админка модели Board.
+    """
     inlines = [
         ThreadInline,
     ]
