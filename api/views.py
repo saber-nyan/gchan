@@ -24,6 +24,7 @@ from django.core.files.base import ContentFile
 from django.db import IntegrityError, DataError
 from django.db.models import Max
 from django.http import JsonResponse, Http404
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from filetype import filetype
 from filetype.types import IMAGE, VIDEO
@@ -36,6 +37,70 @@ from api.models import Post, File, Thread, Board
 from api.serializers import PostSerializer, ThreadSerializer, BoardSerializer, FileSerializer
 
 log = logging.getLogger(__name__)
+
+
+def create_post_or_thread(request, board_name, thread_id=None):
+    try:
+        board = get_object_or_404(Board, board_name=board_name)
+        if board.closed:
+            return JsonResponse({'success': False, 'details': 'Доска закрыта.'})
+        if thread_id is not None:  # Если не создаем тред, а постим в существующий
+            thread = board.threads.get(posts__id=thread_id)
+            if thread.closed:
+                return JsonResponse({'success': False, 'details': 'Тред закрыт.'})
+    except (TypeError, ValueError, ValidationError, Thread.DoesNotExist):
+        log.info('No such thread to post in.')
+        raise Http404()
+    data: Dict = JSONParser().parse(request)
+    files = File.objects.filter(hash__in=data.pop('files')).all()
+    if len(files) > 4:
+        return JsonResponse({'success': False, 'details': 'Нельзя постить больше четырех файлов.'})
+    if thread_id is None and len(files) == 0:
+        return JsonResponse({'success': False, 'details': 'Нельзя создать тред без файла.'})
+    # TODO: tripcode processing
+    # TODO: text size check
+    # TODO: rate limiting
+    try:
+        if thread_id is None:
+            thread = Thread.objects.create(
+                pinned=False,
+                closed=False,
+                board=board,
+                last_bump_time=timezone.now()
+            )
+            thread.save()
+            # TODO: old thread deletion!
+        try:
+            new_post_id = Post.objects.filter(thread__board=board).last().post_id + 1
+        except Exception:
+            log.warning('Unknown new post id...', exc_info=True)
+            new_post_id = 1
+        email = data.get('email', '')
+        post = Post.objects.create(
+            post_id=new_post_id,
+            text=data.get('text', None),
+            email=email,
+            name=data.get('name', None) or board.default_name,
+            subject=data.get('subject', ''),
+            trip_code=data.get('trip_code', ''),
+            op=data.get('op', None),
+            thread=thread  # FIXME: Local variable 'thread' might be referenced before assignment?!
+        )
+        if thread_id is not None and email != "sage" and thread.posts.count() <= board.bump_limit:
+            thread.last_bump_time = timezone.now()
+    except (IntegrityError, DataError) as e:
+        info = e.args[0].split('\n')[0]
+        return JsonResponse({'success': False, 'details': f'Не все необходимые поля заполнены: {info}'})
+    except ValidationError as e:
+        return JsonResponse({'success': False, 'details': ', '.join(e.messages)})
+    post.files.add(*files)
+    try:
+        post.full_clean()
+    except ValidationError as e:
+        return JsonResponse({'success': False, 'errors': e.message_dict})
+    post.save()
+    thread.save()
+    return JsonResponse({'success': True, 'data': PostSerializer(post).data}, safe=False)
 
 
 @api_view(["GET"], )
@@ -93,7 +158,7 @@ def get_thread(request, board_name, thread_id):
 @api_view(["POST"], )
 @csrf_exempt
 def create_thread(request, board_name):
-    pass
+    return create_post_or_thread(request, board_name)
 
 
 @api_view(["GET"], )
@@ -107,48 +172,7 @@ def get_post(request, board_name, post_id):
 @api_view(["POST"], )
 @csrf_exempt
 def create_post(request, board_name, thread_id):
-    try:
-        board = get_object_or_404(Board, board_name=board_name)
-        thread = board.threads.get(posts__id=thread_id)
-        if board.closed:
-            return JsonResponse({'success': False, 'details': 'Доска закрыта.'})
-        if thread.closed:
-            return JsonResponse({'success': False, 'details': 'Тред закрыт.'})
-    except (TypeError, ValueError, ValidationError, Thread.DoesNotExist):
-        log.info('No such thread to post in.')
-        raise Http404()
-    data: Dict = JSONParser().parse(request)
-    files = File.objects.filter(hash__in=data.pop('files')).all()
-    if len(files) > 4:
-        return JsonResponse({'success': False, 'details': 'Нельзя постить больше четырех файлов.'})
-
-    # TODO: tripcode processing
-    # TODO: text size check
-    # TODO: rate limiting
-    try:
-        post = Post.objects.create(
-            post_id=Post.objects.filter(thread__board=board).last().post_id + 1,
-            text=data.get('text', None),
-            email=data.get('email', ''),
-            name=data.get('name', None) or board.default_name,
-            subject=data.get('subject', ''),
-            trip_code=data.get('trip_code', ''),
-            op=data.get('op', None),
-            thread=thread
-        )
-    except (IntegrityError, DataError) as e:
-        info = e.args[0].split('\n')[0]
-        return JsonResponse({'success': False, 'details': f'Не все необходимые поля заполнены: {info}'})
-    except ValidationError as e:
-        return JsonResponse({'success': False, 'details': ', '.join(e.messages)})
-    post.files.add(*files)
-    try:
-        post.full_clean()
-    except ValidationError as e:
-        return JsonResponse({'success': False, 'errors': e.message_dict})
-    post.save()
-    thread.save()
-    return JsonResponse({'success': True, 'data': PostSerializer(post).data}, safe=False)
+    return create_post_or_thread(request, board_name, thread_id)
 
 
 @api_view(["GET"], )

@@ -32,7 +32,7 @@ def preview_fname(model, fname):
 
 class File(models.Model):
     class Meta:
-        ordering = ['-created_at', '-modified_at', 'filename', ]
+        ordering = ['filename', ]
 
     class FileTypeEnum(Enum):
         JPEG = 'jpg'
@@ -123,12 +123,13 @@ class Post(models.Model):
 
 class Thread(models.Model):
     class Meta:
-        ordering = ['-pinned', ]
+        ordering = ['-pinned', '-last_bump_time']
 
     pinned = models.BooleanField('always on top')
     closed = models.BooleanField('closed')
     board = models.ForeignKey('Board', on_delete=models.CASCADE, related_name='threads',
                               verbose_name='board', null=False, blank=False)
+    last_bump_time = models.DateTimeField('last bump time', default=timezone.now)
 
     def __str__(self):
         return f'#{self.pk} ({self.posts.first()})'
