@@ -68,9 +68,17 @@ INSTALLED_APPS.extend([
     'index',
 ])
 
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_SSL_REDIRECT = True
+
 MIDDLEWARE = [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',  # PLACE AFTER GZipMiddleware!!!
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',  # PLACE AFTER GZipMiddleware!!!
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
