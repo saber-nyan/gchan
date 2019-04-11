@@ -38,6 +38,8 @@ from api.serializers import PostSerializer, ThreadSerializer, BoardSerializer, F
 
 log = logging.getLogger(__name__)
 
+THREADS_PER_PAGE = 10
+
 
 def create_post_or_thread(request, board_name, thread_id=None):
     try:
@@ -69,7 +71,6 @@ def create_post_or_thread(request, board_name, thread_id=None):
                 last_bump_time=timezone.now()
             )
             thread.save()
-            # TODO: old thread deletion!
         try:
             new_post_id = Post.objects.filter(thread__board=board).last().post_id + 1
         except Exception:
@@ -83,7 +84,7 @@ def create_post_or_thread(request, board_name, thread_id=None):
             name=data.get('name', None) or board.default_name,
             subject=data.get('subject', ''),
             trip_code=data.get('trip_code', ''),
-            op=data.get('op', None),
+            op=data.get('op', False),
             thread=thread  # FIXME: Local variable 'thread' might be referenced before assignment?!
         )
         if thread_id is not None and email != "sage" and thread.posts.count() <= board.bump_limit:
@@ -100,6 +101,10 @@ def create_post_or_thread(request, board_name, thread_id=None):
         return JsonResponse({'success': False, 'errors': e.message_dict})
     post.save()
     thread.save()
+    while board.threads.count() > THREADS_PER_PAGE * board.pages:
+        thread_to_delete = board.threads.last()
+        log.debug('Deleting %s...', thread_to_delete)
+        thread_to_delete.delete()
     return JsonResponse({'success': True, 'data': PostSerializer(post).data}, safe=False)
 
 
@@ -114,11 +119,10 @@ def get_all_boards(request):
 @api_view(["GET"], )
 @csrf_exempt
 def get_all_threads(request, board_name, page):
-    per_page = 10
     threads = Thread.objects \
                   .filter(board__board_name=board_name) \
                   .annotate(Max('posts__created_at')) \
-                  .order_by('-posts__created_at__max')[page * per_page: (page + 1) * per_page]
+                  .order_by('-posts__created_at__max')[page * THREADS_PER_PAGE: (page + 1) * THREADS_PER_PAGE]
     board = get_object_or_404(Board, board_name=board_name)
     threads_list = []
     for thread in threads:

@@ -160,7 +160,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format': '%(asctime)s [pid%(process)d] %(pathname)s:%(lineno)d:%(funcName)s() '
+            'format': '%(asctime)s [pid%(process)d] %(lineno)d:%(funcName)s() '
                       '[%(name)s-%(levelname)s] %(message)s'
         },
     },
