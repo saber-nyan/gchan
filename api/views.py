@@ -66,7 +66,10 @@ def create_post_or_thread(request, board_name, thread_id=None) -> JsonResponse:
         log.info('No such thread to post in.')
         raise Http404()
     data: Dict = JSONParser().parse(request)
-    files = File.objects.filter(hash__in=data.pop('files')).all()
+    try:
+        files = File.objects.filter(hash__in=data.pop('files')).all()
+    except KeyError:
+        return JsonResponse({'success': False, 'details': 'Нельзя создать тред без файла.'})
     if len(files) > 4:
         return JsonResponse({'success': False, 'details': 'Нельзя постить больше четырех файлов.'})
     if thread_id is None and len(files) == 0:

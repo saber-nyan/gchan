@@ -84,9 +84,33 @@ const Board = Vue.component('board', {
 </div>`
 });
 
+const Home = Vue.component('home', {
+	data: function () {
+	},
+	template: `
+<div>
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+	<h1 class="display-4">Pricing</h1>
+	<p class="lead">Quickly build an effective pricing table for your potential customers with this Bootstrap example. It’s built with default Bootstrap components and utilities with little customization.</p>
+</div>
+<table class="table">
+	<thead>
+		<tr>
+			<th scope="col">Доска</th>
+			<th scope="col">Название</th>
+			<th scope="col">Страниц</th>
+			<th scope="col">Бамплимит</th>
+		</tr>
+	</thead>
+</table>
+</div>
+`
+});
+
 const router = new VueRouter({
 	routes: [
 		{path: '/b/', component: Board},
+		{path: '', component: Home},
 	],
 });
 
@@ -97,5 +121,5 @@ const app = new Vue({
 	created: function () {
 		console.info('created!', this);
 	},
-	components: {Thread, Board,},
+	components: {Thread, Board, Home,},
 });
