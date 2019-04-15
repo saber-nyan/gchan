@@ -17,10 +17,7 @@
 'use strict';
 
 const Thread = Vue.component('thread', {
-	props: ['thread'],
-	// data: function () {
-	// 	return {}
-	// },
+	props: ['thread',],
 	template: `
 <div class="card mb-3">
 	<div class="row no-gutters">
@@ -84,25 +81,60 @@ const Board = Vue.component('board', {
 </div>`
 });
 
+const BoardEl = Vue.component('board-el', {
+	props: ['board',],
+	template: `
+<tr>
+	<th scope="row"><router-link :to="board.boardName">{{ board.boardName }}</router-link></th>
+	<td>{{ board.description }}</td>
+	<td>{{ board.pages }}</td>
+	<td>{{ board.bumplimit }}</td>
+</tr>
+`
+});
+
 const Home = Vue.component('home', {
 	data: function () {
+		return {
+			boardsList: [
+				{
+					boardName: 'b',
+					description: 'Бред',
+					pages: 15,
+					bumplimit: 500
+				},
+				{
+					boardName: 's',
+					description: 'Программы',
+					pages: 15,
+					bumplimit: 500
+				},
+			],
+		}
 	},
 	template: `
 <div>
-<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-	<h1 class="display-4">Pricing</h1>
-	<p class="lead">Quickly build an effective pricing table for your potential customers with this Bootstrap example. It’s built with default Bootstrap components and utilities with little customization.</p>
-</div>
-<table class="table">
-	<thead>
-		<tr>
-			<th scope="col">Доска</th>
-			<th scope="col">Название</th>
-			<th scope="col">Страниц</th>
-			<th scope="col">Бамплимит</th>
-		</tr>
-	</thead>
-</table>
+	<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+		<h1 class="display-4">Pricing</h1>
+		<p class="lead">Quickly build an effective pricing table for your potential customers with this Bootstrap
+			example. It’s built with default Bootstrap components and utilities with little customization.</p>
+	</div>
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th scope="col">Доска</th>
+				<th scope="col">Название</th>
+				<th scope="col">Страниц</th>
+				<th scope="col">Бамплимит</th>
+			</tr>
+		</thead>
+		<tbody>
+			<board-el
+					v-for="board in boardsList"
+					:board="board"
+					:key="board.boardName"></board-el>
+		</tbody>
+	</table>
 </div>
 `
 });
@@ -121,5 +153,5 @@ const app = new Vue({
 	created: function () {
 		console.info('created!', this);
 	},
-	components: {Thread, Board, Home,},
+	components: {Thread, Board, Home, BoardEl,},
 });
